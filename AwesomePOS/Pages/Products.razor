@@ -1,0 +1,110 @@
+﻿@page "/products"
+@inject IDialogService DialogService
+
+@using System.Globalization;
+
+
+
+
+<MudCard Style="border-radius:10px;" Outlined="true">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudText Typo="Typo.h6">Add / Edit Products</MudText>
+        </CardHeaderContent>
+    </MudCardHeader>
+    <MudCardContent>
+        <MudForm Model="product">
+            <MudTextField @bind-Value="product.Name" Label="Name" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-4" />
+            <MudNumericField Culture=@_en Format="N2" @bind-Value="product.Price" Min="1" Label="Price" Variant="Variant.Outlined" Margin="Margin.Dense" />
+        </MudForm>
+    </MudCardContent>
+    <br />
+</MudCard>
+
+<MudToolBar Style="margin:0;padding:0">
+    <MudSpacer />
+    <MudButtonGroup Color="Color.Primary" Variant="Variant.Outlined" OverrideStyles="true">
+        <MudButton Tr="TextTransform.Lowercase" StartIcon="@Icons.Material.Filled.Save" IconColor="Color.Success" OnClick="Save">Save</MudButton>
+        <MudButton IconColor="Color.Error" StartIcon="@Icons.Material.Filled.Cancel">Clear</MudButton>
+    </MudButtonGroup>
+</MudToolBar>
+<br />
+
+<MudCard Style="border-radius:10px;" Outlined="true">
+    <MudTable Elevation="0" Style="border-radius:15px" Items="@products.Take(6)" Hover="true" Breakpoint="Breakpoint.Sm" T="Product">
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">Products</MudText>
+            <MudSpacer />
+            <MudTextField @bind-Value="Search" Placeholder="Search For Product..." Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+        </ToolBarContent>
+        <HeaderContent>
+            <MudTh Style="width:70%">Name</MudTh>
+            <MudTh Style="width:30%">Price</MudTh>
+            <MudTh></MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Name">@context.Name</MudTd>
+            <MudTd DataLabel="Price">@context.Price</MudTd>
+            <MudTd DataLabel="">
+                <MudButtonGroup Color="Color.Primary" Variant="Variant.Outlined">
+                    <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" Color="Color.Primary" @onclick="@(()=>Copy(@context))"></MudIconButton>
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" @onclick="@(()=>Edit(@context))"></MudIconButton>
+                    <MudIconButton @onclick="@(()=>Delete(@context))" Color="Color.Error" Icon="@Icons.Material.Filled.DeleteOutline"></MudIconButton>
+                </MudButtonGroup>
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+</MudCard>
+
+
+
+
+@code {
+
+    public CultureInfo _en = CultureInfo.GetCultureInfo("en-US");
+    public string Search { get; set; }
+    private Product product = new();
+
+    private List<Product> products = new List<Product>
+    {
+        new Product { Id = 1, Name = "Product 1", Price = 19.99m },
+        new Product { Id = 2, Name = "Product 2", Price = 29.99m },
+        new Product { Id = 3, Name = "Product 3", Price = 39.99m }
+    };
+
+
+    private void Copy(Product product)
+    {
+        this.product = product;
+        this.product.Id = 0;
+    }
+
+    private void Edit(Product product)
+    {
+        this.product = product;
+    }
+
+    private async void Delete(Product product)
+    {
+        var confirm = await Dialog.ShowDelete(DialogService);
+        if (confirm)
+        {
+            products.Remove(product);
+            StateHasChanged();
+        }
+    }
+
+    private void Save()
+    {
+        if (product.Id == 0)
+        {
+            product.Id = products.Max(x => x.Id) + 1;
+            products.Add(product);
+        }
+        else
+        {
+            var index = products.FindIndex(x => x.Id == product.Id);
+            products[index] = product;
+        }
+    }
+}

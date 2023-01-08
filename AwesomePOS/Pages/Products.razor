@@ -74,7 +74,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await RefreshListAsync();
+        Task.Run(RefreshListAsync);
         await base.OnInitializedAsync();
     }
 

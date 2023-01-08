@@ -1,5 +1,8 @@
 ﻿@page "/products"
+@using Microsoft.EntityFrameworkCore
+
 @inject IDialogService DialogService
+@inject ISqliteWasmDbContextFactory<AppLocalContext> Factory
 
 @using System.Globalization;
 
@@ -31,9 +34,8 @@
 <br />
 
 <MudCard Style="border-radius:10px;" Outlined="true">
-    <MudTable Elevation="0" Style="border-radius:15px" Items="@products.Take(6)" Hover="true" Breakpoint="Breakpoint.Sm" T="Product">
+    <MudTable Elevation="0" Style="border-radius:15px" Items="@products" Hover="true" Breakpoint="Breakpoint.Sm" T="Product">
         <ToolBarContent>
-            <MudText Typo="Typo.h6">Products</MudText>
             <MudSpacer />
             <MudTextField @bind-Value="Search" Placeholder="Search For Product..." Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
         </ToolBarContent>
@@ -64,19 +66,33 @@
     public CultureInfo _en = CultureInfo.GetCultureInfo("en-US");
     public string Search { get; set; }
     private Product product = new();
+    private bool busy;
 
-    private List<Product> products = new List<Product>
+
+    private List<Product> products = new();
+
+
+    protected override async Task OnInitializedAsync()
     {
-        new Product { Id = 1, Name = "Product 1", Price = 19.99m },
-        new Product { Id = 2, Name = "Product 2", Price = 29.99m },
-        new Product { Id = 3, Name = "Product 3", Price = 39.99m }
-    };
+        await RefreshListAsync();
+        await base.OnInitializedAsync();
+    }
 
+
+    private async Task RefreshListAsync()
+    {
+        using var ctx = await Factory.CreateDbContextAsync();
+        busy = true;
+        products = await ctx.Products.ToListAsync();
+        busy = false;
+        StateHasChanged();
+    }
 
     private void Copy(Product product)
     {
-        this.product = product;
-        this.product.Id = 0;
+        this.product = new();
+        this.product.Name = product.Name;
+        this.product.Price = product.Price;
     }
 
     private void Edit(Product product)
@@ -89,22 +105,37 @@
         var confirm = await Dialog.ShowDelete(DialogService);
         if (confirm)
         {
+            using var ctx = await Factory.CreateDbContextAsync();
+            busy = true;
+            ctx.Products.Remove(product);
+            await ctx.SaveChangesAsync();
+            busy = false;
             products.Remove(product);
             StateHasChanged();
         }
     }
 
-    private void Save()
+    private async Task Save()
     {
+        using var ctx = await Factory.CreateDbContextAsync();
+
+
         if (product.Id == 0)
         {
-            product.Id = products.Max(x => x.Id) + 1;
-            products.Add(product);
+            var res = ctx.Products.Add(product);
+            products.Add(res.Entity);
+
         }
         else
         {
+            var res = ctx.Products.Update(product);
             var index = products.FindIndex(x => x.Id == product.Id);
-            products[index] = product;
+            products[index] = res.Entity;
         }
+
+        busy = true;
+        await ctx.SaveChangesAsync();
+        busy = false;
+        product = new();
     }
 }

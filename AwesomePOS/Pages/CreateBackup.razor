@@ -1,0 +1,22 @@
+﻿@page "/createbackup"
+@using Microsoft.EntityFrameworkCore
+
+@inject ISqliteWasmDbContextFactory<AppLocalContext> Factory
+
+<h3>Download backup:</h3>
+<BackupLink @ref="bl" DbContextType="typeof(AppLocalContext)" />
+
+
+@code
+{
+    private BackupLink? bl;
+    private bool busy;
+    protected override async Task OnInitializedAsync()
+    {
+        busy = true;
+        using var ctx = await Factory.CreateDbContextAsync();
+        var list  = await ctx.Products.ToArrayAsync();
+        await bl.RefreshAsync();
+        busy = false;
+    }
+}

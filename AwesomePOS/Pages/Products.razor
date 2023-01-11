@@ -1,9 +1,11 @@
 ﻿@page "/products"
+
 @using Microsoft.EntityFrameworkCore
 
 @inject IDialogService DialogService
 @inject ISqliteWasmDbContextFactory<AppLocalContext> Factory
-
+@inject IDispatcher Dispatcher
+@inject IState<ProductsState> ProductsState
 @using System.Globalization;
 
 
@@ -69,7 +71,7 @@
     private bool busy;
 
 
-    private List<Product> products = new();
+    Product[] products => ProductsState.Value.Products;
 
 
     protected override async Task OnInitializedAsync()
@@ -81,9 +83,14 @@
 
     private async Task RefreshListAsync()
     {
+
+        if (!ProductsState.Value.Products.Any())
+        {
+            Dispatcher.Dispatch(new ProductsLoadAction());
+        }
         using var ctx = await Factory.CreateDbContextAsync();
         busy = true;
-        products = await ctx.Products.ToListAsync();
+        //products = await ctx.Products.ToListAsync();
         busy = false;
         StateHasChanged();
     }
@@ -110,7 +117,7 @@
             ctx.Products.Remove(product);
             await ctx.SaveChangesAsync();
             busy = false;
-            products.Remove(product);
+            //products.Remove(product);
             StateHasChanged();
         }
     }
@@ -123,14 +130,14 @@
         if (product.Id == 0)
         {
             var res = ctx.Products.Add(product);
-            products.Add(res.Entity);
+            //products.Add(res.Entity);
 
         }
         else
         {
             var res = ctx.Products.Update(product);
-            var index = products.FindIndex(x => x.Id == product.Id);
-            products[index] = res.Entity;
+            //var index = products.FindIndex(x => x.Id == product.Id);
+            //products[index] = res.Entity;
         }
 
         busy = true;

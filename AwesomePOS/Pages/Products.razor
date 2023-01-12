@@ -19,7 +19,7 @@
     </MudCardHeader>
     <MudCardContent>
         <MudForm Model="product">
-            <MudTextField @bind-Value="product.Name" Label="Name" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-4" />
+            <MudTextField @ref="mudTextField" AutoFocus="true" @bind-Value="product.Name" Label="Name" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-4" />
             <MudNumericField Culture=@_en Format="N2" @bind-Value="product.Price" Min="1" Label="Price" Variant="Variant.Outlined" Margin="Margin.Dense" />
         </MudForm>
     </MudCardContent>
@@ -34,6 +34,7 @@
     </MudButtonGroup>
 </MudToolBar>
 <br />
+
 
 <MudCard Style="border-radius:10px;" Outlined="true">
     <MudTable Elevation="0" Style="border-radius:15px" Items="@products" Hover="true" Breakpoint="Breakpoint.Sm" T="Product">
@@ -69,80 +70,55 @@
     public string Search { get; set; }
     private Product product = new();
     private bool busy;
-
+    MudTextField<string> mudTextField;
 
     Product[] products => ProductsState.Value.Products;
 
 
     protected override async Task OnInitializedAsync()
     {
-        Task.Run(RefreshListAsync);
-        await base.OnInitializedAsync();
+        await RefreshListAsync();
     }
 
 
     private async Task RefreshListAsync()
     {
-
         if (!ProductsState.Value.Products.Any())
         {
             Dispatcher.Dispatch(new ProductsLoadAction());
         }
-        using var ctx = await Factory.CreateDbContextAsync();
-        busy = true;
-        //products = await ctx.Products.ToListAsync();
-        busy = false;
-        StateHasChanged();
     }
 
-    private void Copy(Product product)
+    private async Task Copy(Product product)
     {
         this.product = new();
         this.product.Name = product.Name;
         this.product.Price = product.Price;
+        await mudTextField.FocusAsync();
+
     }
 
-    private void Edit(Product product)
+    private async Task Edit(Product product)
     {
         this.product = product;
+        await mudTextField.FocusAsync();
     }
 
-    private async void Delete(Product product)
+    private async void Delete(Product dproduct)
     {
         var confirm = await Dialog.ShowDelete(DialogService);
         if (confirm)
         {
-            using var ctx = await Factory.CreateDbContextAsync();
-            busy = true;
-            ctx.Products.Remove(product);
-            await ctx.SaveChangesAsync();
-            busy = false;
-            //products.Remove(product);
+            Dispatcher.Dispatch(new ProductsDeleteAction(dproduct));
+            await mudTextField.FocusAsync();
             StateHasChanged();
         }
     }
 
     private async Task Save()
     {
-        using var ctx = await Factory.CreateDbContextAsync();
-
-
-        if (product.Id == 0)
-        {
-            var res = ctx.Products.Add(product);
-            //products.Add(res.Entity);
-
-        }
-        else
-        {
-            var res = ctx.Products.Update(product);
-            //var index = products.FindIndex(x => x.Id == product.Id);
-            //products[index] = res.Entity;
-        }
-
-        busy = true;
-        await ctx.SaveChangesAsync();
-        busy = false;
+        Dispatcher.Dispatch(new ProductsSaveAction(product));
         product = new();
+        await mudTextField.FocusAsync();
     }
 }

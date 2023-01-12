@@ -7,6 +7,7 @@ public record ProductsSetAction(Product[] Products);
 public record ProductsSaveAction(Product Product);
 public record ProductsOnAddAction(Product Parcode);
 public record ProductsDeleteAction(Product Product);
+public record ProductsOnDeleteAction(Product Product);
 
 public record ProductsState
 {
@@ -52,6 +53,24 @@ public static class UnitsReducers
             Products = newList
         };
     }
+
+
+    [ReducerMethod]
+    public static ProductsState OnProjectRemove(ProductsState state, ProductsOnDeleteAction action)
+    {
+        var list = state.Products.ToList();
+        var exist = list.Single(x => x.Id == action.Product.Id);
+        list.Remove(exist);
+
+        var newProjectArray = list
+               .OrderBy(x => x.Name)
+               .ToArray();
+
+        return state with
+        {
+            Products = newProjectArray
+        };
+    }
 }
 
 public class ProductsEffects
@@ -92,5 +111,6 @@ public class ProductsEffects
     public async Task Delete(ProductsDeleteAction action, IDispatcher dispatcher)
     {
         var item = await _repo.Delete(action.Product);
+        dispatcher.Dispatch(new ProductsOnDeleteAction(action.Product));
     }
 }

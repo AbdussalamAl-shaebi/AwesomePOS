@@ -1,6 +1,5 @@
 ﻿@page "/products"
 
-@using Microsoft.EntityFrameworkCore
 
 @inject IDialogService DialogService
 @inject ISqliteWasmDbContextFactory<AppLocalContext> Factory
@@ -29,37 +28,43 @@
 <MudToolBar Style="margin:0;padding:0">
     <MudSpacer />
     <MudButtonGroup Color="Color.Primary" Variant="Variant.Outlined" OverrideStyles="true">
-        <MudButton Tr="TextTransform.Lowercase" StartIcon="@Icons.Material.Filled.Save" IconColor="Color.Success" OnClick="Save">Save</MudButton>
+        <MudButton StartIcon="@Icons.Material.Filled.Save" IconColor="Color.Success" OnClick="Save">Save</MudButton>
+        <MudButton StartIcon="@Icons.Material.Filled.Search" IconColor="Color.Success" OnClick="SearchFunc">Search</MudButton>
         <MudButton IconColor="Color.Error" StartIcon="@Icons.Material.Filled.Cancel">Clear</MudButton>
     </MudButtonGroup>
 </MudToolBar>
 <br />
 
 
-<MudCard Style="border-radius:10px;" Outlined="true">
-    <MudTable Elevation="0" Style="border-radius:15px" Items="@products" Hover="true" Breakpoint="Breakpoint.Sm" T="Product">
-        <ToolBarContent>
-            <MudSpacer />
-            <MudTextField @bind-Value="Search" Placeholder="Search For Product..." Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
-        </ToolBarContent>
-        <HeaderContent>
-            <MudTh Style="width:70%">Name</MudTh>
-            <MudTh Style="width:30%">Price</MudTh>
-            <MudTh></MudTh>
-        </HeaderContent>
-        <RowTemplate>
-            <MudTd DataLabel="Name">@context.Name</MudTd>
-            <MudTd DataLabel="Price">@context.Price</MudTd>
-            <MudTd DataLabel="">
-                <MudButtonGroup Color="Color.Primary" Variant="Variant.Outlined">
-                    <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" Color="Color.Primary" @onclick="@(()=>Copy(@context))"></MudIconButton>
-                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" @onclick="@(()=>Edit(@context))"></MudIconButton>
-                    <MudIconButton @onclick="@(()=>Delete(@context))" Color="Color.Error" Icon="@Icons.Material.Filled.DeleteOutline"></MudIconButton>
-                </MudButtonGroup>
-            </MudTd>
-        </RowTemplate>
-    </MudTable>
-</MudCard>
+
+<MudDrawer @bind-Open="@openSearch" Anchor="Anchor.Top" Variant="@DrawerVariant.Temporary" Elevation="1">
+    <MudDrawerContainer>
+        <MudCard Style="border-radius:10px;margin:15px" Elevation="3" Outlined="true">
+            <MudTable Elevation="0" Style="border-radius:15px" Items="@products" Hover="true" Breakpoint="Breakpoint.Sm" T="Product">
+                <ToolBarContent>
+                    <MudSpacer />
+                    <MudTextField @bind-Value="Search" Placeholder="Search For Product..." Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                </ToolBarContent>
+                <HeaderContent>
+                    <MudTh Style="width:70%">Name</MudTh>
+                    <MudTh Style="width:30%">Price</MudTh>
+                    <MudTh></MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Name">@context.Name</MudTd>
+                    <MudTd DataLabel="Price">@context.Price</MudTd>
+                    <MudTd DataLabel="">
+                        <MudButtonGroup Color="Color.Primary" Variant="Variant.Outlined">
+                            <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" Color="Color.Primary" @onclick="@(()=>Copy(@context))"></MudIconButton>
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" @onclick="@(()=>Edit(@context))"></MudIconButton>
+                            <MudIconButton @onclick="@(()=>Delete(@context))" Color="Color.Error" Icon="@Icons.Material.Filled.DeleteOutline"></MudIconButton>
+                        </MudButtonGroup>
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
+        </MudCard>
+    </MudDrawerContainer>
+</MudDrawer>
 
 
 
@@ -71,8 +76,9 @@
     private Product product = new();
     private bool busy;
     MudTextField<string> mudTextField;
+    bool openSearch = false;
 
-    Product[] products => ProductsState.Value.Products;
+    Product[] products => openSearch ? ProductsState.Value.Products : new Product[] { };
 
 
     protected override async Task OnInitializedAsync()
@@ -83,42 +89,91 @@
 
     private async Task RefreshListAsync()
     {
-        if (!ProductsState.Value.Products.Any())
+        try
         {
-            Dispatcher.Dispatch(new ProductsLoadAction());
+            if (!ProductsState.Value.Products.Any())
+            {
+                Dispatcher.Dispatch(new ProductsLoadAction());
+            }
         }
+        catch
+        {
+
+        }
+
     }
 
     private async Task Copy(Product product)
     {
-        this.product = new();
-        this.product.Name = product.Name;
-        this.product.Price = product.Price;
-        await mudTextField.FocusAsync();
+        try
+        {
+            this.product = new();
+            this.product.Name = product.Name;
+            this.product.Price = product.Price;
+            openSearch = false;
+            await mudTextField.FocusAsync();
+        }
+        catch
+        {
+
+        }
+
 
     }
 
     private async Task Edit(Product product)
     {
-        this.product = product;
-        await mudTextField.FocusAsync();
+        try
+        {
+            this.product = product;
+            openSearch = false;
+            await mudTextField.FocusAsync();
+        }
+        catch
+        {
+
+        }
+
     }
 
     private async void Delete(Product dproduct)
     {
-        var confirm = await Dialog.ShowDelete(DialogService);
-        if (confirm)
+        try
         {
-            Dispatcher.Dispatch(new ProductsDeleteAction(dproduct));
-            await mudTextField.FocusAsync();
-            StateHasChanged();
+            var confirm = await Dialog.ShowDelete(DialogService);
+            if (confirm)
+            {
+                Dispatcher.Dispatch(new ProductsDeleteAction(dproduct));
+                await mudTextField.FocusAsync();
+                openSearch = false;
+                StateHasChanged();
+            }
         }
+        catch
+        {
+
+        }
+
     }
 
     private async Task Save()
     {
-        Dispatcher.Dispatch(new ProductsSaveAction(product));
-        product = new();
-        await mudTextField.FocusAsync();
+        try
+        {
+            Dispatcher.Dispatch(new ProductsSaveAction(product));
+            product = new();
+            await mudTextField.FocusAsync();
+            openSearch = false;
+        }
+        catch
+        {
+
+        }
+
+    }
+
+    private void SearchFunc()
+    {
+        openSearch = true;
     }
 }

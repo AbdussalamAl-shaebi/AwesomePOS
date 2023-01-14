@@ -10,4 +10,6 @@ public class AppLocalContext: DbContext
     }
 
     public DbSet<Product> Products { get; set; } = null!;
+    public DbSet<BillMaster> BillMasters { get; set; } = null!;
+    public DbSet<BillDetail> BillDetails { get; set; } = null!;
 }

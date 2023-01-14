@@ -2,7 +2,6 @@
 
 
 @inject IDialogService DialogService
-@inject ISqliteWasmDbContextFactory<AppLocalContext> Factory
 @inject IDispatcher Dispatcher
 @inject IState<ProductsState> ProductsState
 @using System.Globalization;
@@ -25,7 +24,7 @@
     <br />
 </MudCard>
 
-<MudToolBar Style="margin:0;padding:0">
+<MudToolBar  Style="margin:0;padding:0;align-self:center;">
     <MudSpacer />
     <MudButtonGroup Color="Color.Primary" Variant="Variant.Outlined" OverrideStyles="true">
         <MudButton StartIcon="@Icons.Material.Filled.Save" IconColor="Color.Success" OnClick="Save">Save</MudButton>

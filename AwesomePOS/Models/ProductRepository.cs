@@ -40,8 +40,7 @@ public class ProductRepository
     public async Task<Product> Delete(Product product)
     {
         using var dbContext = await _db.CreateDbContextAsync();
-        var tracking = dbContext.Products.Attach(product);
-        tracking.State = EntityState.Deleted;
+        var tracking =await dbContext.Products.Where(m=>m.Id == product.Id).ExecuteDeleteAsync();
         await dbContext.SaveChangesAsync();
         return product;
     }

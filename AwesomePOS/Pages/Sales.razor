@@ -1,6 +1,37 @@
 ﻿@page "/sales"
-<h3>Sales</h3>
+@inject IDispatcher Dispatcher
+
+<MudCard Style="border-radius:10px;" Outlined="true">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudText Typo="Typo.h6">Add / Edit Products</MudText>
+        </CardHeaderContent>
+    </MudCardHeader>
+    <MudCardContent>
+        <MudForm Model="model">
+            <MudTextField AutoFocus="true" @bind-Value="model.Note" Label="Note" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-4" />
+        </MudForm>
+    </MudCardContent>
+    <br />
+</MudCard>
+
+<MudToolBar Style="margin:0;padding:0;align-self:center;">
+    <MudSpacer />
+    <MudButtonGroup Color="Color.Primary" Variant="Variant.Outlined" OverrideStyles="true">
+        <MudButton StartIcon="@Icons.Material.Filled.Save" IconColor="Color.Success" OnClick="Save">Save</MudButton>
+        <MudButton IconColor="Color.Error" StartIcon="@Icons.Material.Filled.Cancel">Clear</MudButton>
+    </MudButtonGroup>
+</MudToolBar>
+<br />
+
 
 @code {
+    BillMaster model = new();
+
+
+    private async Task Save()
+    {
+        Dispatcher.Dispatch(new BillsSaveAction(new Bill { BillMaster = model }));
+    }
 
 }

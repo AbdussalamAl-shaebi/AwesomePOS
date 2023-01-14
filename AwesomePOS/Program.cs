@@ -20,6 +20,7 @@ builder.Services.AddFluxor(o =>
 #endif
 });
 builder.Services.AddSingleton<ProductRepository>();
+builder.Services.AddSingleton<BillRepository>();
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 builder.Services.AddMudServices();
 

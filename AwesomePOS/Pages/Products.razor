@@ -8,7 +8,7 @@
 
 
 
-
+<MudSpacer />
 <MudCard Style="border-radius:10px;" Outlined="true">
     <MudCardHeader>
         <CardHeaderContent>
@@ -24,15 +24,20 @@
     <br />
 </MudCard>
 
-<MudToolBar  Style="margin:0;padding:0;align-self:center;">
-    <MudSpacer />
-    <MudButtonGroup Color="Color.Primary" Variant="Variant.Outlined" OverrideStyles="true">
-        <MudButton StartIcon="@Icons.Material.Filled.Save" IconColor="Color.Success" OnClick="Save">Save</MudButton>
-        <MudButton StartIcon="@Icons.Material.Filled.Search" IconColor="Color.Success" OnClick="SearchFunc">Search</MudButton>
-        <MudButton IconColor="Color.Error" StartIcon="@Icons.Material.Filled.Cancel">Clear</MudButton>
-    </MudButtonGroup>
-</MudToolBar>
-<br />
+
+
+<MudAppBar Bottom="true" Fixed="true" Color="Color.Transparent" Elevation="0">
+    <MudToolBar    Style="width:100%">
+        <MudSpacer />
+        <MudButtonGroup Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined" OverrideStyles="true">
+            <MudButton Size="Size.Small" StartIcon="@Icons.Material.Filled.Save" IconColor="Color.Success" OnClick="Save">Save</MudButton>
+            <MudButton Size="Size.Small" StartIcon="@Icons.Material.Filled.Search" IconColor="Color.Success" OnClick="SearchFunc">Search</MudButton>
+            <MudButton Size="Size.Small" IconColor="Color.Error" StartIcon="@Icons.Material.Filled.Cancel">Clear</MudButton>
+        </MudButtonGroup>
+        <MudSpacer />
+    </MudToolBar>
+</MudAppBar>
+
 
 
 

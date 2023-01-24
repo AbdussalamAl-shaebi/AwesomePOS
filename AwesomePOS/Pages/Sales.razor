@@ -1,37 +1,135 @@
 ﻿@page "/sales"
 @inject IDispatcher Dispatcher
+@inject IState<ProductsState> ProductsState
+
 
 <MudCard Style="border-radius:10px;" Outlined="true">
-    <MudCardHeader>
-        <CardHeaderContent>
-            <MudText Typo="Typo.h6">Add / Edit Products</MudText>
-        </CardHeaderContent>
-    </MudCardHeader>
-    <MudCardContent>
-        <MudForm Model="model">
-            <MudTextField AutoFocus="true" @bind-Value="model.Note" Label="Note" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-4" />
-        </MudForm>
-    </MudCardContent>
-    <br />
+    <MudGrid>
+        <MudItem xs="12">
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">Add Sales</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudAutocomplete T="Product"
+                                 Label="Product"
+                                 @bind-Value="SelectedProduct"
+                                 SearchFunc="@SearchInProdacts"
+                                 Variant="Variant.Outlined" Margin="Margin.Dense"
+                                 AdornmentIcon="@Icons.Material.Filled.Search"
+                                 AdornmentColor="Color.Primary" />
+            </MudCardContent>
+        </MudItem>
+        <br />
+        <MudItem xs="12">
+            <MudTable Elevation="0" Style="border-radius:15px" Items="@dtl" Hover="true" Breakpoint="Breakpoint.Sm" T="BillDetailViewModel">
+                <HeaderContent>
+                    <MudTh Style="width:50%">Name</MudTh>
+                    <MudTh Style="width:20%">Quntity</MudTh>
+                    <MudTh Style="width:30%">Price</MudTh>
+                    <MudTh></MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd>
+                        <MudGrid>
+                            <MudItem Style="margin:auto;padding:0" xs="2">
+                                <MudText Align="Align.Start" Style="text-align:center">Name</MudText>
+                            </MudItem>
+                            <MudItem xs="10">
+                                <MudTextField FullWidth="true" Immediate="true" OnKeyDown="@((args)=>txtChangeQuantityText(args,@context))" HideSpinButtons="true" @bind-Value="@context.ProdactName" Label="" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                            </MudItem>
+                        </MudGrid>
+                    </MudTd>
+                    <MudTd DataLabel="Quntity:">
+                        <MudGrid>
+                            <MudItem xs="12">
+                                <MudNumericField Min="1" FullWidth="true" Immediate="true" OnKeyDown="@((args)=>txtChangeQuantityText(args,@context))" HideSpinButtons="true" @bind-Value="@context.Quantity" Label="" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                            </MudItem>
+                        </MudGrid>
+                    </MudTd>
+                    <MudTd DataLabel="Price  :">
+                        <MudGrid>
+                            <MudItem xs="12">
+                                <MudNumericField Min="1" FullWidth="true" Immediate="true" OnKeyDown="@((args)=>txtChangeQuantityText(args,@context))" HideSpinButtons="true" @bind-Value="@context.Price" Label="" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                            </MudItem>
+                        </MudGrid>
+                    </MudTd>
+                    <MudTd DataLabel="">
+                        <MudButtonGroup Color="Color.Primary" Variant="Variant.Outlined">
+                            @* <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" Color="Color.Primary" @onclick="@(()=>Copy(@context))"></MudIconButton>
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" @onclick="@(()=>Edit(@context))"></MudIconButton>
+                            <MudIconButton @onclick="@(()=>Delete(@context))" Color="Color.Error" Icon="@Icons.Material.Filled.DeleteOutline"></MudIconButton>*@
+                        </MudButtonGroup>
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
+        </MudItem>
+    </MudGrid>
 </MudCard>
 
-<MudToolBar Style="margin:0;padding:0;align-self:center;">
-    <MudSpacer />
-    <MudButtonGroup Color="Color.Primary" Variant="Variant.Outlined" OverrideStyles="true">
-        <MudButton StartIcon="@Icons.Material.Filled.Save" IconColor="Color.Success" OnClick="Save">Save</MudButton>
-        <MudButton IconColor="Color.Error" StartIcon="@Icons.Material.Filled.Cancel">Clear</MudButton>
-    </MudButtonGroup>
-</MudToolBar>
-<br />
+<MudAppBar Bottom="true" Fixed="true" Color="Color.Transparent" Elevation="0">
+    <MudToolBar Style="width:100%">
+        <MudSpacer />
+        <MudButtonGroup Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined" OverrideStyles="true">
+            <MudButton Size="Size.Small" StartIcon="@Icons.Material.Filled.Save" IconColor="Color.Success" OnClick="Save">Save</MudButton>
+            <MudButton Size="Size.Small" IconColor="Color.Error" StartIcon="@Icons.Material.Filled.Cancel">Clear</MudButton>
+        </MudButtonGroup>
+        <MudSpacer />
+    </MudToolBar>
+</MudAppBar>
+
+
 
 
 @code {
-    BillMaster model = new();
 
+    Product SelectedProduct
+    {
+        get
+        {
+            return null;
+        }
+        set
+        {
+            if (value != null)
+            {
+                dtl.Add(new BillDetailViewModel() { ProdactName = value.Name, Price = value.Price, Quantity = 1, });
+            }
+        }
+    }
+    BillMaster model = new();
+    List<BillDetailViewModel> dtl = new();
+
+    Product[] Products => ProductsState.Value.Products;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!ProductsState.Value.Products.Any())
+        {
+            Dispatcher.Dispatch(new ProductsLoadAction());
+        }
+    }
 
     private async Task Save()
     {
         Dispatcher.Dispatch(new BillsSaveAction(new Bill { BillMaster = model }));
     }
 
+
+
+    private async Task<IEnumerable<Product>> SearchInProdacts(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+            return Products;
+        return Products.Where(x => x.Name.Contains(value, StringComparison.InvariantCultureIgnoreCase)).ToList();
+    }
+
+    private async Task txtChangeQuantityText(KeyboardEventArgs e, BillDetailViewModel dtlItem)
+    {
+        //if (tabweebAppSettings.IsEnterKey(e.Key))
+        //{
+        //    await FocusBarcodeAsync();
+        //}
+    }
 }

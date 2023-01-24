@@ -40,7 +40,7 @@ public class ProductRepository
     public async Task<Product> Delete(Product product)
     {
         using var dbContext = await _db.CreateDbContextAsync();
-        var tracking =await dbContext.Products.Where(m=>m.Id == product.Id).ExecuteDeleteAsync();
+        var tracking =dbContext.Products.Remove(product);
         await dbContext.SaveChangesAsync();
         return product;
     }

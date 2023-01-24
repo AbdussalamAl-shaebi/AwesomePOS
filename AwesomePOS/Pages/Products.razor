@@ -10,25 +10,23 @@
 
 <MudGrid>
     <MudItem xs="12">
-        
+
     </MudItem>
     <MudItem xs="12">
-        <MudItem xs="12">
-            <MudCard Style="border-radius:10px;" Outlined="true">
-                <MudCardHeader>
-                    <CardHeaderContent>
-                        <MudText Typo="Typo.h6">Add / Edit Products</MudText>
-                    </CardHeaderContent>
-                </MudCardHeader>
-                <MudCardContent>
-                    <MudForm Model="product">
-                        <MudTextField @ref="mudTextField" AutoFocus="true" @bind-Value="product.Name" Label="Name" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-4" />
-                        <MudNumericField Culture=@_en Format="N2" @bind-Value="product.Price" Min="1" Label="Price" Variant="Variant.Outlined" Margin="Margin.Dense" />
-                    </MudForm>
-                </MudCardContent>
-                <br />
-            </MudCard>
-        </MudItem>
+        <MudCard Style="border-radius:10px;" Outlined="true">
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">Add / Edit Products</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudForm Model="product">
+                    <MudTextField @ref="mudTextField" AutoFocus="true" @bind-Value="product.Name" Label="Name" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-4" />
+                    <MudNumericField Culture=@_en Format="N2" @bind-Value="product.Price" Min="1" Label="Price" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                </MudForm>
+            </MudCardContent>
+            <br />
+        </MudCard>
     </MudItem>
     <MudItem xs="12">
     </MudItem>
@@ -38,15 +36,14 @@
 
 
 
-<MudAppBar Bottom="true" Fixed="true" Color="Color.Transparent" Elevation="0">
+<MudAppBar Bottom="true" Fixed="true" Color="Color.Primary" Dense="true" Elevation="0">
     <MudToolBar Style="width:100%">
         <MudSpacer />
-        <MudButtonGroup Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined" OverrideStyles="true">
-            <MudButton Size="Size.Small" StartIcon="@Icons.Material.Filled.Save" IconColor="Color.Success" OnClick="Save">Save</MudButton>
-            <MudButton Size="Size.Small" StartIcon="@Icons.Material.Filled.Search" IconColor="Color.Success" OnClick="SearchFunc">Search</MudButton>
-            <MudButton Size="Size.Small" IconColor="Color.Error" StartIcon="@Icons.Material.Filled.Cancel">Clear</MudButton>
+        <MudButtonGroup Size="Size.Small" Style="color:white" Variant="Variant.Outlined" OverrideStyles="true">
+            <MudIconButton Style="color:white" Size="Size.Small" OnClick="Save" Icon="@Icons.Material.Filled.Save" aria-label="Save"></MudIconButton>
+            <MudIconButton Style="color:white" Size="Size.Small" OnClick="SearchFunc" Icon="@Icons.Material.Filled.Search" aria-label="Search"></MudIconButton>
+            <MudIconButton Style="color:white" Size="Size.Small" OnClick="SearchFunc" Icon="@Icons.Material.Filled.Cancel" aria-label="Clear"></MudIconButton>
         </MudButtonGroup>
-        <MudSpacer />
     </MudToolBar>
 </MudAppBar>
 
@@ -95,29 +92,7 @@
     bool openSearch = false;
 
     Product[] products => openSearch ? ProductsState.Value.Products : new Product[] { };
-
-
-    protected override async Task OnInitializedAsync()
-    {
-        await RefreshListAsync();
-    }
-
-
-    private async Task RefreshListAsync()
-    {
-        try
-        {
-            if (!ProductsState.Value.Products.Any())
-            {
-                Dispatcher.Dispatch(new ProductsLoadAction());
-            }
-        }
-        catch
-        {
-
-        }
-
-    }
+    
 
     private async Task Copy(Product product)
     {
@@ -191,5 +166,10 @@
     private void SearchFunc()
     {
         openSearch = true;
+
+        if (!ProductsState.Value.Products.Any())
+        {
+            Dispatcher.Dispatch(new ProductsLoadAction());
+        }
     }
 }

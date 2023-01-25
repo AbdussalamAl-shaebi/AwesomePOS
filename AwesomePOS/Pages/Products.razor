@@ -57,12 +57,24 @@
                     <MudTh></MudTh>
                 </HeaderContent>
                 <RowTemplate>
-                    <MudTd DataLabel="Name">@context.Name</MudTd>
-                    <MudTd DataLabel="Price">@context.Price</MudTd>
+                    <MudTd  DataLabel="Name">
+                        <MudGrid>
+                            <MudItem xs="12">
+                                <MudTextField ReadOnly FullWidth="true" Immediate="true" @bind-Value="@context.Name" Label="" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                            </MudItem>
+                        </MudGrid>
+                    </MudTd>
+                    <MudTd DataLabel="Price:">
+                        <MudGrid>
+                            <MudItem xs="12">
+                                <MudNumericField ReadOnly Min="0" FullWidth="true" Immediate="true" HideSpinButtons="true" @bind-Value="@context.Price" Label="" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                            </MudItem>
+                        </MudGrid>
+                    </MudTd>
                     <MudTd DataLabel="" Style="align-items:center;text-align:center">
-                        <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.ContentCopy" Color="Color.Primary" @onclick="@(()=>Copy(@context))"></MudIconButton>
-                        <MudIconButton Style="margin-left:16px;margin-right:16px" Size="Size.Small" Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" @onclick="@(()=>Edit(@context))"></MudIconButton>
-                        <MudIconButton Size="Size.Small" @onclick="@(()=>Delete(@context))" Color="Color.Error" Icon="@Icons.Material.Filled.DeleteOutline"></MudIconButton>
+                        <MudIconButton Size="Size.Medium" Icon="@Icons.Material.Filled.ContentCopy" Color="Color.Primary" @onclick="@(()=>Copy(@context))"></MudIconButton>
+                        <MudIconButton Style="margin-left:16px;margin-right:16px" Size="Size.Medium" Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" @onclick="@(()=>Edit(@context))"></MudIconButton>
+                        <MudIconButton Size="Size.Medium" @onclick="@(()=>Delete(@context))" Color="Color.Error" Icon="@Icons.Material.Filled.DeleteOutline"></MudIconButton>
                     </MudTd>
                 </RowTemplate>
                 <PagerContent>

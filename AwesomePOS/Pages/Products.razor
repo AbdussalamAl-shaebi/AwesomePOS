@@ -8,39 +8,33 @@
 
 
 
-<MudGrid>
-    <MudItem xs="12">
-        <MudCard Style="border-radius:10px;" Outlined="true">
-            <MudCardHeader>
-                <CardHeaderContent>
-                    <MudText Typo="Typo.h6">Add / Edit Products</MudText>
-                </CardHeaderContent>
-            </MudCardHeader>
-            <MudCardContent>
-                <MudForm Model="product">
-                    <MudTextField @ref="mudTextField" AutoFocus="true" @bind-Value="product.Name" Label="Name" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-4" />
-                    <MudNumericField Culture=@_en Format="N2" @bind-Value="product.Price" Min="1" Label="Price" Variant="Variant.Outlined" Margin="Margin.Dense" />
-                </MudForm>
-            </MudCardContent>
-            <br />
-        </MudCard>
-    </MudItem>
-    <MudItem xs="12">
-        <MudToolBar Style="width:100%">
-            <MudSpacer />
-            <MudButtonGroup Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined" OverrideStyles="true">
-                <MudIconButton Color="Color.Success" Size="Size.Small" OnClick="Save" Icon="@Icons.Material.Filled.Save" aria-label="Save"></MudIconButton>
-                <MudIconButton Color="Color.Success" Size="Size.Small" OnClick="SearchFunc" Icon="@Icons.Material.Filled.Search" aria-label="Search"></MudIconButton>
-                <MudIconButton Color="Color.Error" Size="Size.Small" OnClick="SearchFunc" Icon="@Icons.Material.Filled.Cancel" aria-label="Clear"></MudIconButton>
-            </MudButtonGroup>
-        </MudToolBar>
-    </MudItem>
-    <MudItem xs="12">
-    </MudItem>
-</MudGrid>
-
-
-
+<MudForm Model="@product">
+    <MudGrid>
+        <MudItem xs="12">
+            <MudCard Style="border-radius:10px;" Outlined="true">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">Add / Edit Products</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudTextField For="@(() => product.Name)" Required="true" RequiredError="User name is required!" @ref="mudTextField" AutoFocus="true" @bind-Value="product.Name" Label="Name" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-4" />
+                    <MudNumericField Culture=@_en Format="N2" @bind-Value="product.Price" Min="0" Label="Price" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-4" />
+                    <MudNumericField Culture=@_en Format="N2" @bind-Value="product.VATRate" Min="0" Label="VAT Rate" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                </MudCardContent>
+                <br />
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+    <MudToolBar Style="margin:0px;padding:0px;width:100%">
+        <MudSpacer />
+        <MudButtonGroup Size="Size.Medium" Variant="Variant.Outlined">
+            <MudIconButton OnClick="Save"  Color="Color.Success" Size="Size.Medium" Icon="@Icons.Material.Filled.Save" aria-label="Save"></MudIconButton>
+            <MudIconButton Color="Color.Primary" Size="Size.Medium" OnClick="SearchFunc" Icon="@Icons.Material.Filled.Search" aria-label="Search"></MudIconButton>
+            <MudIconButton Color="Color.Error" Size="Size.Medium" OnClick="SearchFunc" Icon="@Icons.Material.Filled.Cancel" aria-label="Clear"></MudIconButton>
+        </MudButtonGroup>
+    </MudToolBar>
+</MudForm>
 
 
 <MudDrawer @bind-Open="@openSearch" Style="max-height:100%" Color="Color.Transparent" Anchor="Anchor.Top" Variant="@DrawerVariant.Temporary" Elevation="0">
@@ -48,8 +42,8 @@
         <MudCard Style="border-radius:10px;margin:15px;" Elevation="3" Outlined="true">
             <MudTable FixedHeader="true" Dense="true" Bordered="true" Striped="true" Elevation="0" Style="border-radius:15px;" Items="@products" Hover="true" Breakpoint="Breakpoint.Sm" T="Product">
                 <ToolBarContent>
-                    <MudTextField @bind-Value="Search" Placeholder="Search For Product..." Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" />
-                    <MudIconButton OnClick="CloseSearchFunc" Class="mt-4 ml-8" Size="Size.Medium" Color="Color.Error" Icon="@Icons.Material.Filled.Close"></MudIconButton>
+                    <MudIconButton OnClick="CloseSearchFunc" Style="left:-10px" Size="Size.Medium" Color="Color.Primary" Icon="@Icons.Material.Filled.ArrowBack"></MudIconButton>
+                    <MudTextField @bind-Value="Search" Margin="Margin.Dense" Style="top:-6px" Placeholder="Search For Product..." Adornment="Adornment.End" IconSize="Size.Small" />
                 </ToolBarContent>
                 <HeaderContent>
                     <MudTh>Name</MudTh>
@@ -57,14 +51,14 @@
                     <MudTh></MudTh>
                 </HeaderContent>
                 <RowTemplate>
-                    <MudTd  DataLabel="Name">
+                    <MudTd DataLabel="Name">
                         <MudGrid>
                             <MudItem xs="12">
                                 <MudTextField ReadOnly FullWidth="true" Immediate="true" @bind-Value="@context.Name" Label="" Variant="Variant.Outlined" Margin="Margin.Dense" />
                             </MudItem>
                         </MudGrid>
                     </MudTd>
-                    <MudTd DataLabel="Price:">
+                    <MudTd DataLabel="Price&nbsp;">
                         <MudGrid>
                             <MudItem xs="12">
                                 <MudNumericField ReadOnly Min="0" FullWidth="true" Immediate="true" HideSpinButtons="true" @bind-Value="@context.Price" Label="" Variant="Variant.Outlined" Margin="Margin.Dense" />
@@ -107,6 +101,7 @@
             this.product = new();
             this.product.Name = product.Name;
             this.product.Price = product.Price;
+            this.product.VATRate = product.VATRate;
             openSearch = false;
             await mudTextField.FocusAsync();
         }

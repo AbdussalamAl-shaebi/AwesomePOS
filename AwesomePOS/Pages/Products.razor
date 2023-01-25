@@ -10,9 +10,6 @@
 
 <MudGrid>
     <MudItem xs="12">
-
-    </MudItem>
-    <MudItem xs="12">
         <MudCard Style="border-radius:10px;" Outlined="true">
             <MudCardHeader>
                 <CardHeaderContent>
@@ -29,6 +26,16 @@
         </MudCard>
     </MudItem>
     <MudItem xs="12">
+        <MudToolBar Style="width:100%">
+            <MudSpacer />
+            <MudButtonGroup Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined" OverrideStyles="true">
+                <MudIconButton Color="Color.Success" Size="Size.Small" OnClick="Save" Icon="@Icons.Material.Filled.Save" aria-label="Save"></MudIconButton>
+                <MudIconButton Color="Color.Success" Size="Size.Small" OnClick="SearchFunc" Icon="@Icons.Material.Filled.Search" aria-label="Search"></MudIconButton>
+                <MudIconButton Color="Color.Error" Size="Size.Small" OnClick="SearchFunc" Icon="@Icons.Material.Filled.Cancel" aria-label="Clear"></MudIconButton>
+            </MudButtonGroup>
+        </MudToolBar>
+    </MudItem>
+    <MudItem xs="12">
     </MudItem>
 </MudGrid>
 
@@ -36,44 +43,31 @@
 
 
 
-<MudAppBar Bottom="true" Fixed="true" Color="Color.Primary" Dense="true" Elevation="0">
-    <MudToolBar Style="width:100%">
-        <MudSpacer />
-        <MudButtonGroup Size="Size.Small" Style="color:white" Variant="Variant.Outlined" OverrideStyles="true">
-            <MudIconButton Style="color:white" Size="Size.Small" OnClick="Save" Icon="@Icons.Material.Filled.Save" aria-label="Save"></MudIconButton>
-            <MudIconButton Style="color:white" Size="Size.Small" OnClick="SearchFunc" Icon="@Icons.Material.Filled.Search" aria-label="Search"></MudIconButton>
-            <MudIconButton Style="color:white" Size="Size.Small" OnClick="SearchFunc" Icon="@Icons.Material.Filled.Cancel" aria-label="Clear"></MudIconButton>
-        </MudButtonGroup>
-    </MudToolBar>
-</MudAppBar>
-
-
-
-
-<MudDrawer @bind-Open="@openSearch" Anchor="Anchor.Top" Variant="@DrawerVariant.Temporary" Elevation="1">
+<MudDrawer @bind-Open="@openSearch" Style="max-height:100%" Color="Color.Transparent" Anchor="Anchor.Top" Variant="@DrawerVariant.Temporary" Elevation="0">
     <MudDrawerContainer>
-        <MudCard Style="border-radius:10px;margin:15px" Elevation="3" Outlined="true">
-            <MudTable Elevation="0" Style="border-radius:15px" Items="@products" Hover="true" Breakpoint="Breakpoint.Sm" T="Product">
+        <MudCard Style="border-radius:10px;margin:15px;" Elevation="3" Outlined="true">
+            <MudTable FixedHeader="true" Dense="true" Bordered="true" Striped="true" Elevation="0" Style="border-radius:15px;" Items="@products" Hover="true" Breakpoint="Breakpoint.Sm" T="Product">
                 <ToolBarContent>
-                    <MudSpacer />
-                    <MudTextField @bind-Value="Search" Placeholder="Search For Product..." Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                    <MudTextField @bind-Value="Search" Placeholder="Search For Product..." Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" />
+                    <MudIconButton OnClick="CloseSearchFunc" Class="mt-4 ml-8" Size="Size.Medium" Color="Color.Error" Icon="@Icons.Material.Filled.Close"></MudIconButton>
                 </ToolBarContent>
                 <HeaderContent>
-                    <MudTh Style="width:70%">Name</MudTh>
-                    <MudTh Style="width:30%">Price</MudTh>
+                    <MudTh>Name</MudTh>
+                    <MudTh>Price</MudTh>
                     <MudTh></MudTh>
                 </HeaderContent>
                 <RowTemplate>
                     <MudTd DataLabel="Name">@context.Name</MudTd>
                     <MudTd DataLabel="Price">@context.Price</MudTd>
-                    <MudTd DataLabel="">
-                        <MudButtonGroup Color="Color.Primary" Variant="Variant.Outlined">
-                            <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" Color="Color.Primary" @onclick="@(()=>Copy(@context))"></MudIconButton>
-                            <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" @onclick="@(()=>Edit(@context))"></MudIconButton>
-                            <MudIconButton @onclick="@(()=>Delete(@context))" Color="Color.Error" Icon="@Icons.Material.Filled.DeleteOutline"></MudIconButton>
-                        </MudButtonGroup>
+                    <MudTd DataLabel="" Style="align-items:center;text-align:center">
+                        <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.ContentCopy" Color="Color.Primary" @onclick="@(()=>Copy(@context))"></MudIconButton>
+                        <MudIconButton Style="margin-left:16px;margin-right:16px" Size="Size.Small" Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" @onclick="@(()=>Edit(@context))"></MudIconButton>
+                        <MudIconButton Size="Size.Small" @onclick="@(()=>Delete(@context))" Color="Color.Error" Icon="@Icons.Material.Filled.DeleteOutline"></MudIconButton>
                     </MudTd>
                 </RowTemplate>
+                <PagerContent>
+                    <MudTablePager />
+                </PagerContent>
             </MudTable>
         </MudCard>
     </MudDrawerContainer>
@@ -92,7 +86,7 @@
     bool openSearch = false;
 
     Product[] products => openSearch ? ProductsState.Value.Products : new Product[] { };
-    
+
 
     private async Task Copy(Product product)
     {
@@ -171,5 +165,10 @@
         {
             Dispatcher.Dispatch(new ProductsLoadAction());
         }
+    }
+
+    private void CloseSearchFunc()
+    {
+        openSearch = false;
     }
 }

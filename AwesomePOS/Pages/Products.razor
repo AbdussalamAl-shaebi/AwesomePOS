@@ -40,8 +40,8 @@
 
 <MudDrawer @bind-Open="@openSearch"  Color="Color.Transparent" Anchor="Anchor.Top" Variant="@DrawerVariant.Temporary" Elevation="0">
     <MudDrawerContainer>
-        <MudCard  Style="border-radius:10px;margin:15px;max-height:90%" Elevation="3" Outlined="true">
-            <MudTable  Breakpoint="Breakpoint.Sm" Height="500px" HorizontalScrollbar="true" Style="border-radius:15px;" Filter="new Func<Product, bool>(Search)" FixedHeader="true" Dense="true" Bordered="true" Striped="true" Elevation="0" Items="@products" Hover="true" T="Product">
+        <MudCard  Style="border-radius:10px;margin:15px;max-height:100%;vertical-align:central;align-content:center" Elevation="3" Outlined="true">
+            <MudTable  Breakpoint="Breakpoint.Sm" Height="450px" HorizontalScrollbar="true" Style="border-radius:15px;" Filter="new Func<Product, bool>(Search)" FixedHeader="true" Dense="true" Bordered="true" Striped="true" Elevation="0" Items="@products" Hover="true" T="Product">
                 <ToolBarContent>
                     <MudIconButton OnClick="CloseSearchFunc" Style="left:-10px" Size="Size.Medium" Color="Color.Primary" Icon="@Icons.Material.Filled.ArrowBack"></MudIconButton>
                     <MudTextField @ref="mudTxtSearch" @bind-Value="searchString" Margin="Margin.Dense" Style="top:-6px" Placeholder="Search For Product..." Adornment="Adornment.End" IconSize="Size.Small" />
@@ -159,6 +159,7 @@
 
             if (string.IsNullOrEmpty(product.Name))
             {
+                success = false;
                 Snackbar.Add("Name of prodact must be entered", Severity.Error);
             }
 

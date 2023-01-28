@@ -4,6 +4,7 @@
 @inject IDialogService DialogService
 @inject IDispatcher Dispatcher
 @inject IState<ProductsState> ProductsState
+@inject ISnackbar Snackbar
 @using System.Globalization;
 
 
@@ -18,11 +19,9 @@
                 </CardHeaderContent>
             </MudCardHeader>
             <MudCardContent>
-                <MudForm @ref="form" @bind-IsValid="@success">
-                    <MudTextField Required="true" RequiredError="User name is required!" @ref="mudTextField" AutoFocus="true" @bind-Value="product.Name" Label="Name" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-4" />
-                    <MudNumericField Culture=@_en Format="N2" @bind-Value="product.Price" Min="0" Label="Price" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-4" />
-                    <MudNumericField Culture=@_en Format="N2" @bind-Value="product.VATRate" Min="0" Label="VAT Rate" Variant="Variant.Outlined" Margin="Margin.Dense" />
-                </MudForm>
+                <MudTextField @ref="mudTextField" AutoFocus="true" @bind-Value="product.Name" Label="Name" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-4" />
+                <MudNumericField Culture=@_en Format="N2" @bind-Value="product.Price" Min="0" Label="Price" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-4" />
+                <MudNumericField Culture=@_en Format="N2" @bind-Value="product.VATRate" Min="0" Label="VAT Rate" Variant="Variant.Outlined" Margin="Margin.Dense" />
             </MudCardContent>
             <br />
         </MudCard>
@@ -32,25 +31,23 @@
     <MudSpacer />
     <MudButtonGroup Size="Size.Medium" Variant="Variant.Outlined">
         <MudIconButton ButtonType="ButtonType.Button" OnClick="Save" Color="Color.Success" Size="Size.Medium" Icon="@Icons.Material.Filled.Save" aria-label="Save"></MudIconButton>
-        <MudIconButton ButtonType="ButtonType.Button" Color="Color.Primary" Size="Size.Medium" OnClick="SearchFunc" Icon="@Icons.Material.Filled.Search" aria-label="Search"></MudIconButton>
-        <MudIconButton ButtonType="ButtonType.Button" Color="Color.Error" Size="Size.Medium" OnClick="SearchFunc" Icon="@Icons.Material.Filled.Cancel" aria-label="Clear"></MudIconButton>
+        <MudIconButton ButtonType="ButtonType.Button" Color="Color.Primary" Size="Size.Medium" OnClick="OenSearch" Icon="@Icons.Material.Filled.Search" aria-label="Search"></MudIconButton>
+        <MudIconButton ButtonType="ButtonType.Button" Color="Color.Error" Size="Size.Medium" OnClick="Clear" Icon="@Icons.Material.Filled.Cancel" aria-label="Clear"></MudIconButton>
     </MudButtonGroup>
 </MudToolBar>
 
 
 
-<MudDrawer @bind-Open="@openSearch" Style="max-height:100%" Color="Color.Transparent" Anchor="Anchor.Top" Variant="@DrawerVariant.Temporary" Elevation="0">
+<MudDrawer @bind-Open="@openSearch"  Color="Color.Transparent" Anchor="Anchor.Top" Variant="@DrawerVariant.Temporary" Elevation="0">
     <MudDrawerContainer>
-        <MudCard Style="border-radius:10px;margin:15px;" Elevation="3" Outlined="true">
-            <MudTable FixedHeader="true" Dense="true" Bordered="true" Striped="true" Elevation="0" Style="border-radius:15px;" Items="@products" Hover="true" Breakpoint="Breakpoint.Sm" T="Product">
+        <MudCard  Style="border-radius:10px;margin:15px;max-height:90%" Elevation="3" Outlined="true">
+            <MudTable  Breakpoint="Breakpoint.Sm" Height="500px" HorizontalScrollbar="true" Style="border-radius:15px;" Filter="new Func<Product, bool>(Search)" FixedHeader="true" Dense="true" Bordered="true" Striped="true" Elevation="0" Items="@products" Hover="true" T="Product">
                 <ToolBarContent>
                     <MudIconButton OnClick="CloseSearchFunc" Style="left:-10px" Size="Size.Medium" Color="Color.Primary" Icon="@Icons.Material.Filled.ArrowBack"></MudIconButton>
-                    <MudTextField @bind-Value="Search" Margin="Margin.Dense" Style="top:-6px" Placeholder="Search For Product..." Adornment="Adornment.End" IconSize="Size.Small" />
+                    <MudTextField @ref="mudTxtSearch" @bind-Value="searchString" Margin="Margin.Dense" Style="top:-6px" Placeholder="Search For Product..." Adornment="Adornment.End" IconSize="Size.Small" />
                 </ToolBarContent>
                 <HeaderContent>
                     <MudTh>Name</MudTh>
-
-
                     <MudTh>Price</MudTh>
                     <MudTh></MudTh>
                 </HeaderContent>
@@ -89,13 +86,14 @@
 @code {
 
     public CultureInfo _en = CultureInfo.GetCultureInfo("en-US");
-    public string Search { get; set; }
+    public string searchString { get; set; }
     private Product product = new();
     private bool busy;
     MudTextField<string> mudTextField;
+    MudTextField<string> mudTxtSearch;
     bool openSearch = false;
-    MudForm form;
-    bool success = false;
+
+
     Product[] products => openSearch ? ProductsState.Value.Products : new Product[] { };
 
 
@@ -157,7 +155,13 @@
     {
         try
         {
-            await mudTextField.FocusAsync();
+            var success = true;
+
+            if (string.IsNullOrEmpty(product.Name))
+            {
+                Snackbar.Add("Name of prodact must be entered", Severity.Error);
+            }
+
             if (success)
             {
                 Dispatcher.Dispatch(new ProductsSaveAction(product));
@@ -172,18 +176,35 @@
 
     }
 
-    private void SearchFunc()
+    private async void OenSearch()
     {
         openSearch = true;
-
         if (!ProductsState.Value.Products.Any())
         {
             Dispatcher.Dispatch(new ProductsLoadAction());
         }
+        await mudTxtSearch.FocusAsync(); 
+
     }
 
-    private void CloseSearchFunc()
+    private bool Search(Product prodact)
+    {
+        var res = string.IsNullOrEmpty(searchString) ||
+        string.IsNullOrWhiteSpace(searchString) ||
+        prodact.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase);
+        return res;
+    }
+
+    private async void Clear()
+    {
+        product = new Product();
+        await mudTextField.FocusAsync();
+    }
+
+    private async void CloseSearchFunc()
     {
         openSearch = false;
+        await mudTextField.FocusAsync();
     }
+
 }

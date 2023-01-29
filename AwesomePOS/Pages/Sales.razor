@@ -1,4 +1,5 @@
 ﻿@page "/sales"
+@using System.Globalization;
 @inject IDispatcher Dispatcher
 @inject IState<ProductsState> ProductsState
 
@@ -8,12 +9,19 @@
         <MudItem xs="12">
             <MudCardHeader>
                 <CardHeaderContent>
-                    <MudText Typo="Typo.h6">Add Sales</MudText>
+                    <MudToolBar Style="margin:0px;padding:0px;width:100%">
+                        <MudText Typo="Typo.h6">Sales</MudText>
+                        <MudSpacer />
+                        <MudButtonGroup Size="Size.Medium" Color="Color.Primary" Variant="Variant.Outlined" OverrideStyles="true">
+                            <MudButton Size="Size.Medium" StartIcon="@Icons.Material.Filled.Save" IconColor="Color.Success" OnClick="Save">Save</MudButton>
+                            <MudButton Size="Size.Medium" IconColor="Color.Error" StartIcon="@Icons.Material.Filled.Cancel">Clear</MudButton>
+                        </MudButtonGroup>
+                    </MudToolBar>
                 </CardHeaderContent>
             </MudCardHeader>
             <MudCardContent>
                 <MudAutocomplete T="Product"
-                                 Label="Product"
+                                 Label="Search in products"
                                  @bind-Value="SelectedProduct"
                                  SearchFunc="@SearchInProdacts"
                                  Variant="Variant.Outlined" Margin="Margin.Dense"
@@ -25,27 +33,29 @@
         <MudItem xs="12">
             <MudTable Elevation="0" Style="border-radius:15px" Items="@dtl" Hover="true" Breakpoint="Breakpoint.Sm" T="BillDetailViewModel">
                 <HeaderContent>
-                    <MudTh Style="width:50%">Name</MudTh>
-                    <MudTh Style="width:20%">Quntity</MudTh>
-                    <MudTh Style="width:30%">Price</MudTh>
+                    <MudTh Style="width:40%">Name</MudTh>
+                    <MudTh>Quntity</MudTh>
+                    <MudTh>Price</MudTh>
                     <MudTh></MudTh>
                 </HeaderContent>
                 <RowTemplate>
                     <MudTd DataLabel="Name &nbsp;&nbsp;">
-                        <MudTextField   Immediate="true" OnKeyDown="@((args)=>txtChangeQuantityText(args,@context))" HideSpinButtons="true" @bind-Value="@context.ProdactName" Label="" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                        <MudTextField Immediate="true" OnKeyDown="@((args)=>txtChangeQuantityText(args,@context))" HideSpinButtons="true" @bind-Value="@context.ProdactName" Label="" Variant="Variant.Outlined" Margin="Margin.Dense" />
                     </MudTd>
-                    <MudTd DataLabel="Quntity" >
-                        <MudNumericField Min="1"  Immediate="true" OnKeyDown="@((args)=>txtChangeQuantityText(args,@context))" HideSpinButtons="true" @bind-Value="@context.Quantity" Label="" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    <MudTd DataLabel="Quntity">
+                        <MudNumericField Min="1" Culture=@_en Format="N2" OnKeyDown="@((args)=>txtChangeQuantityText(args,@context))" @bind-Value="@context.Quantity" Label="" Variant="Variant.Outlined" Margin="Margin.Dense" />
                     </MudTd>
                     <MudTd DataLabel="Price &nbsp;&nbsp;">
-                        <MudNumericField Min="1" Immediate="true" OnKeyDown="@((args)=>txtChangeQuantityText(args,@context))" HideSpinButtons="true" @bind-Value="@context.Price" Label="" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                        <MudNumericField Culture=@_en Format="N2" @bind-Value="context.Price" Min="1" Label=" " Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    </MudTd>
+                    <MudTd DataLabel="Total &nbsp;&nbsp;">
+                        <MudNumericField ReadOnly  Culture=@_en Format="N2" Value="context.VatAmt" Min="1" Label=" " Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    </MudTd>
+                    <MudTd DataLabel="Total &nbsp;&nbsp;">
+                        <MudNumericField Culture=@_en Format="N2" @bind-Value="context.Total" Min="1" Label=" " Variant="Variant.Outlined" Margin="Margin.Dense" />
                     </MudTd>
                     <MudTd DataLabel="">
-                        <MudButtonGroup Color="Color.Primary" Variant="Variant.Outlined">
-                            @* <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" Color="Color.Primary" @onclick="@(()=>Copy(@context))"></MudIconButton>
-                            <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" @onclick="@(()=>Edit(@context))"></MudIconButton>
-                            <MudIconButton @onclick="@(()=>Delete(@context))" Color="Color.Error" Icon="@Icons.Material.Filled.DeleteOutline"></MudIconButton>*@
-                        </MudButtonGroup>
+                        <MudIconButton OnClick="()=>{ dtl.Remove(context); }" Icon="@Icons.Material.Filled.Delete" Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small" />
                     </MudTd>
                 </RowTemplate>
             </MudTable>
@@ -53,21 +63,12 @@
     </MudGrid>
 </MudCard>
 
-<MudAppBar Bottom="true" Fixed="true" Color="Color.Transparent" Elevation="0">
-    <MudToolBar Style="width:100%">
-        <MudSpacer />
-        <MudButtonGroup Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined" OverrideStyles="true">
-            <MudButton Size="Size.Small" StartIcon="@Icons.Material.Filled.Save" IconColor="Color.Success" OnClick="Save">Save</MudButton>
-            <MudButton Size="Size.Small" IconColor="Color.Error" StartIcon="@Icons.Material.Filled.Cancel">Clear</MudButton>
-        </MudButtonGroup>
-        <MudSpacer />
-    </MudToolBar>
-</MudAppBar>
-
 
 
 
 @code {
+
+    public CultureInfo _en = CultureInfo.GetCultureInfo("en-US");
 
     Product SelectedProduct
     {
@@ -79,7 +80,7 @@
         {
             if (value != null)
             {
-                dtl.Add(new BillDetailViewModel() { ProdactName = value.Name, Price = value.Price, Quantity = 1, });
+                dtl.Insert(0, new BillDetailViewModel() { ProdactName = value.Name, Price = value.Price, Quantity = 1, });
             }
         }
     }

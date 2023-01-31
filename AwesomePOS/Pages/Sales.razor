@@ -14,7 +14,7 @@
                         <MudSpacer />
                         <MudButtonGroup Size="Size.Medium" Color="Color.Primary" Variant="Variant.Outlined" OverrideStyles="true">
                             <MudButton Size="Size.Medium" StartIcon="@Icons.Material.Filled.Save" IconColor="Color.Success" OnClick="Save">Save</MudButton>
-                            <MudButton Size="Size.Medium" IconColor="Color.Error" StartIcon="@Icons.Material.Filled.Cancel">Clear</MudButton>
+                            <MudButton Size="Size.Medium" OnClick="Clear" IconColor="Color.Error" StartIcon="@Icons.Material.Filled.Cancel">Clear</MudButton>
                         </MudButtonGroup>
                     </MudToolBar>
                 </CardHeaderContent>
@@ -36,6 +36,8 @@
                     <MudTh Style="width:40%">Name</MudTh>
                     <MudTh>Quntity</MudTh>
                     <MudTh>Price</MudTh>
+                    <MudTh>Vat</MudTh>
+                    <MudTh>Total</MudTh>
                     <MudTh></MudTh>
                 </HeaderContent>
                 <RowTemplate>
@@ -48,7 +50,7 @@
                     <MudTd DataLabel="Price &nbsp;&nbsp;">
                         <MudNumericField Culture=@_en Format="N2" @bind-Value="context.Price" Min="1" Label=" " Variant="Variant.Outlined" Margin="Margin.Dense" />
                     </MudTd>
-                    <MudTd DataLabel="Total &nbsp;&nbsp;">
+                    <MudTd DataLabel="Vat &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;">
                         <MudNumericField ReadOnly  Culture=@_en Format="N2" Value="context.VatAmt" Min="1" Label=" " Variant="Variant.Outlined" Margin="Margin.Dense" />
                     </MudTd>
                     <MudTd DataLabel="Total &nbsp;&nbsp;">
@@ -80,7 +82,7 @@
         {
             if (value != null)
             {
-                dtl.Insert(0, new BillDetailViewModel() { ProdactName = value.Name, Price = value.Price, Quantity = 1, });
+                dtl.Insert(0, new BillDetailViewModel() { ProdactName = value.Name, Price = value.Price, Quantity = 1,VatRate = value.VATRate/100 });
             }
         }
     }
@@ -100,6 +102,12 @@
     private async Task Save()
     {
         Dispatcher.Dispatch(new BillsSaveAction(new Bill { BillMaster = model }));
+    }
+
+
+    public void Clear()
+    {
+        dtl.Clear();
     }
 
 
